@@ -1,19 +1,23 @@
 version: '3.8'
 
 services:
+  # ====================================
+  #  MinIO (local S3)
+  # ====================================
   minio:
     image: minio/minio:latest
     container_name: minio_storage
+    restart: always
     ports:
-      # Port pour l'API S3 (pour que vos scripts puissent s'y connecter)
+      # Port API S3 (pour la connexion depuis les scripts)
       - "9000:9000"
-      # Port pour la console web de MinIO
+      # Port console web (interface graphique)
       - "9001:9001"
     volumes:
-      # On stocke les données de MinIO dans un dossier local pour qu'elles persistent
+      # Données persistantes locales
       - ./minio_data:/data
     environment:
-      # !! CHANGEZ CES IDENTIFIANTS PAR DÉFAUT !!
+      # Identifiants MinIO (tu peux les changer si tu veux)
       MINIO_ROOT_USER: admin-user
       MINIO_ROOT_PASSWORD: admin-password
     command: server /data --console-address ":9001"
@@ -22,9 +26,92 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    networks:
+      - mlops-net
 
-# Ce réseau permet aux futurs conteneurs (ex: Airflow, l'API) de communiquer
-# avec MinIO en utilisant son nom de service ("minio").
+  # ====================================
+  #  MySQL Database
+  # ====================================
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mlops
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - mlops-net
+
+  # ====================================
+  #  phpMyAdmin (interface web MySQL)
+  # ====================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - mlops-net
+
+  # ====================================
+  #  MLflow Tracking Server (optionnel)
+  # ====================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow
+    restart: always
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root s3://mlflow/
+      --host 0.0.0.0
+      --port 5000
+    environment:
+      AWS_ACCESS_KEY_ID: admin-user
+      AWS_SECRET_ACCESS_KEY: admin-password
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    depends_on:
+      - minio
+    networks:
+      - mlops-net
+
+  extraction:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: extraction_sql
+    depends_on:
+      - minio
+      - mysql
+    networks:
+      - mlops-net
+    environment: {}
+
+# ====================================
+#  Volumes et réseau
+# ====================================
+volumes:
+  mysql_data:
+  minio_data:
+
 networks:
-  default:
-    name: mlops_network
+  mlops-net:
+    driver: bridge
+

@@ -1,0 +1,83 @@
+# ============================
+# Fichiers système
+# ============================
+.DS_Store
+Thumbs.db
+*.swp
+
+# ============================
+# Environnements Python
+# ============================
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================
+# Configurations locales
+# ============================
+*.env
+.env.*
+!example.env  # si tu veux garder un modèle d'environnement
+
+# ============================
+# Dossiers Docker / volumes
+# ============================
+mysql_data/
+minio_data/
+mlruns/
+logs/
+tmp/
+airflow/logs/
+airflow/dags/__pycache__/
+airflow/plugins/__pycache__/
+
+# ============================
+# Notebooks / résultats
+# ============================
+.ipynb_checkpoints/
+*.csv
+*.json
+*.h5
+*.pt
+*.pkl
+*.joblib
+
+# ============================
+# Fichiers MLFlow / modèles
+# ============================
+mlruns/
+models/
+artifacts/
+mlflow.db
+
+# ============================
+# Données & images locales
+# ============================
+data/
+dataset/
+datasets/
+outputs/
+*.jpg
+*.png
+*.jpeg
+
+# ============================
+# IDE & éditeurs
+# ============================
+.vscode/
+.idea/
+*.code-workspace
+
+# ============================
+# Docker et Compose
+# ============================
+*.pid
+*.log
+docker-compose.override.yml
