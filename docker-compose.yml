@@ -82,7 +82,7 @@ services:
       AWS_SECRET_ACCESS_KEY: admin-password
       MLFLOW_S3_ENDPOINT_URL: http://minio:9000
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./mlruns:/mlruns
     depends_on:
@@ -90,6 +90,9 @@ services:
     networks:
       - mlops-net
 
+  # ====================================
+  #  Script d'extraction SQL
+  # ====================================
   extraction:
     build:
       context: .
@@ -101,6 +104,39 @@ services:
     networks:
       - mlops-net
     environment: {}
+    command: python extraction_creation_sql.py
+  
+  # ====================================
+  #  Training du modèle
+  # ====================================
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: model_training
+    depends_on:
+      - minio
+      - mysql
+    networks:
+      - mlops-net
+    environment: {}
+    command: python train_model.py
+  
+  # ====================================
+  #  Prédiction avec le modèle
+  # ====================================
+  predict:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: model_predict
+    depends_on:
+      - minio
+      - mysql
+    networks:
+      - mlops-net
+    environment: {}
+    command: python predict.py
 
 # ====================================
 #  Volumes et réseau

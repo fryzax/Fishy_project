@@ -2,7 +2,7 @@
 # Script : generate_fish_data_table.py
 # Objectif : Créer automatiquement une table SQL "fish_data"
 #            à partir des images stockées sur MinIO
-# Auteur : Mathieu + ChatGPT
+# Auteur : Mathieu
 # ===============================================
 
 import pymysql

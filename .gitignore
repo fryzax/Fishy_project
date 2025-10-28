@@ -22,6 +22,7 @@ pip-delete-this-directory.txt
 # ============================
 # Configurations locales
 # ============================
+.venv
 *.env
 .env.*
 !example.env  # si tu veux garder un modèle d'environnement
@@ -67,6 +68,7 @@ outputs/
 *.jpg
 *.png
 *.jpeg
+*.gif
 
 # ============================
 # IDE & éditeurs

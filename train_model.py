@@ -1,7 +1,7 @@
 # ===============================================
 # Script : train_model.py
 # Objectif : Entraîner un modèle CNN pour classifier les poissons
-# Auteur : Mathieu + ChatGPT
+# Auteur : Mathieu 
 # ===============================================
 
 import os
