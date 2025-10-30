@@ -47,6 +47,7 @@ airflow/plugins/__pycache__/
 *.json
 *.h5
 *.pt
+!model_v1_*.pt  # Autoriser les modèles versionnés avec Git LFS
 *.pkl
 *.joblib
 
