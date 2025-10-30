@@ -2,7 +2,7 @@
 # Script : generate_fish_data_table.py
 # Objectif : Créer automatiquement une table SQL "fish_data"
 #            à partir des images stockées sur MinIO
-# Auteur : Mathieu
+# Auteur : Mathieu + Kirsten
 # ===============================================
 
 import pymysql
@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS fish_data (
     species_label VARCHAR(100) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     url_s3 TEXT NOT NULL,
+    split VARCHAR(10) NOT NULL,
     insert_date DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 """
@@ -62,23 +63,42 @@ cursor.execute(create_table_query)
 conn.commit()
 print("✅ Table 'fish_data' vérifiée ou créée avec succès.")
 
+# Vérifier si la colonne 'split' existe, sinon l'ajouter
+cursor.execute("SHOW COLUMNS FROM fish_data LIKE 'split'")
+if cursor.fetchone() is None:
+    print("⚙️  Ajout de la colonne 'split' à la table...")
+    cursor.execute("ALTER TABLE fish_data ADD COLUMN split VARCHAR(10) NOT NULL DEFAULT 'train'")
+    conn.commit()
+    print("✅ Colonne 'split' ajoutée.")
+
+# Nettoyer la table avant insertion (éviter les doublons)
+cursor.execute("DELETE FROM fish_data")
+conn.commit()
+print("🧹 Table nettoyée, prête pour l'insertion.")
+
 # === 5. Parcours des objets MinIO ===
 # ------------------------------------
 objects = minio_client.list_objects(BUCKET_NAME, recursive=True)
 
 insert_query = """
-INSERT INTO fish_data (species_label, file_name, url_s3)
-VALUES (%s, %s, %s)
+INSERT INTO fish_data (species_label, file_name, url_s3, split)
+VALUES (%s, %s, %s, %s)
 """
 
 added = 0
 for obj in objects:
-    key = obj.object_name  # Ex: "train/Catfish/img_001.jpg"
+    key = obj.object_name  # Ex: "train/Catfish/img_001.jpg" ou "test/Catfish/img_002.jpg"
     parts = key.split("/")
 
-    # On cherche les fichiers sous le dossier "train/<label>/..."
-    if len(parts) < 3 or parts[0].lower() != "train":
-        continue  # On ignore les fichiers hors du dossier train/
+    # On cherche les fichiers sous "train/" ou "test/"
+    if len(parts) < 3:
+        continue
+    
+    split = parts[0].lower()  # "train", "test", ou "val"
+    
+    # On ne garde que train et test
+    if split not in ["train", "test"]:
+        continue
 
     label = parts[1]        # ex: "Catfish"
     file_name = parts[-1]   # ex: "img_001.jpg"
@@ -86,7 +106,7 @@ for obj in objects:
     # URL publique (accès via le port 9000)
     url_s3 = urljoin(f"http://localhost:9000/{BUCKET_NAME}/", key)
 
-    cursor.execute(insert_query, (label, file_name, url_s3))
+    cursor.execute(insert_query, (label, file_name, url_s3, split))
     added += 1
 
 conn.commit()

@@ -22,7 +22,7 @@ MINIO_ACCESS_KEY = "admin-user"
 MINIO_SECRET_KEY = "admin-password"
 BUCKET_NAME = "dataset-fish"
 MODEL_BUCKET = "models"
-MODEL_PATH = "model_v1.pt"
+MODEL_PATH = "model_v1_1761836094.pt"  # Modèle entraîné récemment (84.21% val acc)
 
 # MySQL configuration
 MYSQL_HOST = "mysql"
@@ -100,8 +100,8 @@ conn = pymysql.connect(
 )
 cursor = conn.cursor()
 
-# Récupérer 10 images aléatoires
-query = "SELECT id, species_label, file_name, url_s3 FROM fish_data ORDER BY RAND() LIMIT 10"
+# Récupérer 10 images aléatoires du SET DE TEST (pas train!)
+query = "SELECT id, species_label, file_name, url_s3 FROM fish_data WHERE split = 'test' ORDER BY RAND() LIMIT 10"
 cursor.execute(query)
 results = cursor.fetchall()
 
