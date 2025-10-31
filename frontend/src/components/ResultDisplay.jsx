@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import clownImg from '../assets/fish-images/clown.png';
-import barImg from '../assets/fish-images/bar.png';
-import espadonImg from '../assets/fish-images/espadon.png';
-import requinImg from '../assets/fish-images/requin.png';
-import leviatorImg from '../assets/fish-images/leviator.png';
-import poissonMocheImg from '../assets/fish-images/poissonmoche.png';
+// Import des vraies images du dataset de training
+import catfishImg from '../assets/fish-images/catfish.jpg';
+import goldfishImg from '../assets/fish-images/goldfish.jpg';
+import mudfishImg from '../assets/fish-images/mudfish.jpg';
+import mulletImg from '../assets/fish-images/mullet.jpg';
+import snakeheadImg from '../assets/fish-images/snakehead.jpg';
+import leviatorImg from '../assets/fish-images/leviator.png'; // default fallback
 
 // Fun facts pour chaque espèce de poisson
 const fishFacts = {
@@ -35,14 +36,14 @@ const fishFacts = {
   ]
 };
 
-// Images pour chaque espèce
+// Images pour chaque espèce (vraies photos du dataset de training)
 const fishImages = {
-  'Catfish': poissonMocheImg,
-  'Gold Fish': clownImg,
-  'Goldfish': clownImg,
-  'Mudfish': barImg,
-  'Mullet': espadonImg,
-  'Snakehead': requinImg,
+  'Catfish': catfishImg,           // Vraie photo de Catfish
+  'Gold Fish': goldfishImg,        // Vraie photo de Gold Fish
+  'Goldfish': goldfishImg,         // Alias pour Gold Fish
+  'Mudfish': mudfishImg,           // Vraie photo de Mudfish
+  'Mullet': mulletImg,             // Vraie photo de Mullet
+  'Snakehead': snakeheadImg,       // Vraie photo de Snakehead
   'default': leviatorImg
 };
 
