@@ -14,13 +14,34 @@ Projet de classification d'images de poissons utilisant **PyTorch ResNet18** ave
 
 ## 🚀 Démarrage rapide
 
-### 1. Démarrer l'infrastructure et lancer le pipeline complet
+### Option A : Tout démarrer en une commande (Recommandé 🎯)
+
+```bash
+# Démarrer TOUTE l'application (infra + API + frontend)
+docker-compose up -d minio mysql phpmyadmin mlflow fish_api frontend
+
+# Accéder à l'application web
+open http://localhost:3000
+```
+
+✨ **Le lendemain, rallumer tout :**
+```bash
+docker-compose up -d
+```
+
+### Option B : Démarrage étape par étape
+
+#### 1. Infrastructure de base
 
 ```bash
 # Infrastructure + interfaces web
 docker-compose up -d minio mysql phpmyadmin mlflow
+```
 
-# Puis lancer le pipeline d'entraînement
+#### 2. Pipeline d'entraînement du modèle
+
+```bash
+# Lancer le pipeline d'entraînement
 docker-compose up --build extraction training
 ```
 
@@ -31,38 +52,20 @@ Cette commande va automatiquement :
 - ✅ Attendre que extraction soit **terminé avec succès**
 - ✅ Lancer `training` : télécharger les images et entraîner le modèle (20 epochs)
 
-### 2. Tester le modèle entraîné
+#### 3. API et Frontend
 
 ```bash
-# Important : toujours rebuilder après modifications de code
-docker-compose up --build predict
+# Démarrer l'API et le Frontend
+docker-compose up -d fish_api frontend
 ```
 
-### 3. Commandes individuelles
+### 4. Tester le modèle (script Python)
 
 ```bash
-# Uniquement l'extraction SQL
-docker-compose up --build extraction
-
-# Uniquement le training (nécessite que extraction ait été lancé avant)
-docker-compose up --build training
-
-# Lancer une prédiction avec rebuild
 docker-compose up --build predict
 ```
 
 ⚠️ **Important :** Toujours utiliser `--build` après avoir modifié le code Python pour forcer la reconstruction de l'image Docker.
-
-### 4. Démarrer l'API REST et le Frontend
-
-```bash
-# Démarrer l'API FastAPI
-docker-compose up -d fish_api
-
-# Démarrer le frontend React (dans un nouveau terminal)
-cd frontend
-npm run dev
-```
 
 ### 5. Interfaces web
 

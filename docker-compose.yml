@@ -147,6 +147,27 @@ services:
       - mlops-net
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
+  # ====================================
+  #  Frontend React + Vite
+  # ====================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fish_frontend
+    restart: always
+    depends_on:
+      - fish_api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - mlops-net
+    environment:
+      - VITE_API_URL=http://fish_api:8000
+
 
 # ====================================
 #  Volumes et réseau
