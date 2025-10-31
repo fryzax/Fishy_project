@@ -7,15 +7,11 @@ services:
     container_name: minio_storage
     restart: always
     ports:
-      # Port API S3 (pour la connexion depuis les scripts)
-      - "9000:9000"
-      # Port console web (interface graphique)
-      - "9001:9001"
+      - "9000:9000"   # API
+      - "9001:9001"   # Console web
     volumes:
-      # Données persistantes locales
       - ./minio_data:/data
     environment:
-      # Identifiants MinIO (tu peux les changer si tu veux)
       MINIO_ROOT_USER: admin-user
       MINIO_ROOT_PASSWORD: admin-password
     command: server /data --console-address ":9001"
@@ -71,7 +67,7 @@ services:
       - mlops-net
 
   # ====================================
-  #  MLflow Tracking Server (optionnel)
+  #  MLflow (optionnel)
   # ====================================
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
@@ -111,7 +107,6 @@ services:
         condition: service_healthy
     networks:
       - mlops-net
-    environment: {}
     command: python extraction_creation_sql.py
   
   # ====================================
@@ -131,24 +126,27 @@ services:
         condition: service_completed_successfully
     networks:
       - mlops-net
-    environment: {}
     command: python train_model.py
   
   # ====================================
-  #  Prédiction avec le modèle
+  #  API de prédiction FastAPI
   # ====================================
-  predict:
+  fish_api:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
-    container_name: model_predict
+    container_name: fish_api
+    restart: always
     depends_on:
       - minio
-      - mysql
+    ports:
+      - "8000:8000"
+    volumes:
+      - uv_cache:/root/.cache/uv
     networks:
       - mlops-net
-    environment: {}
-    command: python predict.py
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 # ====================================
 #  Volumes et réseau
@@ -156,8 +154,8 @@ services:
 volumes:
   mysql_data:
   minio_data:
+  uv_cache:
 
 networks:
   mlops-net:
     driver: bridge
-
