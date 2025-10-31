@@ -22,16 +22,6 @@ function App() {
       const formData = new FormData();
       formData.append('file', file);
 
-      // TODO: Remplacer par l'URL de votre API backend
-      // const response = await axios.post('/api/predict', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      // });
-
-      // MOCK pour tester le frontend sans backend
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simule le délai de l'API
-
       // 5% chance d'avoir le Kraken Easter Egg ! 🦑
       const krakenChance = Math.random();
       if (krakenChance < 0.05) {
@@ -40,14 +30,18 @@ function App() {
         return;
       }
 
-      const mockSpecies = ['Catfish', 'Gold Fish', 'Mudfish', 'Mullet', 'Snakehead'];
-      const mockResult = {
-        species: mockSpecies[Math.floor(Math.random() * mockSpecies.length)],
-        confidence: Math.random() * 0.4 + 0.6, // 60-100%
-      };
+      // 🔗 Appel au vrai backend FastAPI
+      const response = await axios.post('/api/predict', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      setResult(mockResult);
-      // setResult(response.data); // Décommenter pour utiliser la vraie API
+      // L'API retourne: { "prediction": "Catfish", "confidence": 99.95 }
+      setResult({
+        species: response.data.prediction,
+        confidence: response.data.confidence / 100, // Convertir 99.95 → 0.9995
+      });
     } catch (err) {
       console.error('Error:', err);
       setError('Oops! Something went wrong. Try again! 🐠');

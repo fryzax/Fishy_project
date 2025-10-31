@@ -1,6 +1,6 @@
 # 🐟 Fish Classification - MLOps Project
 
-Projet de classification d'images de poissons utilisant **PyTorch ResNet18** avec un pipeline MLOps complet (MinIO + MySQL + Docker).
+Projet de classification d'images de poissons utilisant **PyTorch ResNet18** avec un pipeline MLOps complet (MinIO + MySQL + Docker) et une interface web interactive.
 
 ## 📊 Résultats
 
@@ -9,6 +9,8 @@ Projet de classification d'images de poissons utilisant **PyTorch ResNet18** ave
 - **Modèle :** ResNet18 (transfer learning)
 - **Validation Accuracy :** 84.21% (meilleur modèle)
 - **Test Accuracy :** ~70-100% selon échantillons
+- **API REST :** FastAPI pour prédictions en temps réel
+- **Frontend :** React + Vite avec animations aquatiques
 
 ## 🚀 Démarrage rapide
 
@@ -51,10 +53,23 @@ docker-compose up --build predict
 
 ⚠️ **Important :** Toujours utiliser `--build` après avoir modifié le code Python pour forcer la reconstruction de l'image Docker.
 
-### 4. Interfaces web
+### 4. Démarrer l'API REST et le Frontend
+
+```bash
+# Démarrer l'API FastAPI
+docker-compose up -d fish_api
+
+# Démarrer le frontend React (dans un nouveau terminal)
+cd frontend
+npm run dev
+```
+
+### 5. Interfaces web
 
 | Service | URL | Identifiants |
 |---------|-----|--------------|
+| **Frontend React** | http://localhost:3000 | - |
+| **API FastAPI** | http://localhost:8000 | - |
 | MinIO Console | http://localhost:9001 | `admin-user` / `admin-password` |
 | phpMyAdmin | http://localhost:8080 | `root` / `root` |
 | MLflow | http://localhost:5001 | - |
@@ -73,6 +88,20 @@ docker-compose up --build predict
                                                             │   Predict    │────▶│  Results │
                                                             │   (test)     │     │          │
                                                             └──────────────┘     └──────────┘
+                                                                                       │
+                                                                                       ▼
+                                                            ┌──────────────────────────────┐
+                                                            │   FastAPI REST API           │
+                                                            │   POST /predict              │
+                                                            └──────────────────────────────┘
+                                                                       │
+                                                                       ▼
+                                                            ┌──────────────────────────────┐
+                                                            │   React Frontend (Vite)      │
+                                                            │   - Upload d'images          │
+                                                            │   - Animations aquatiques    │
+                                                            │   - Affichage résultats      │
+                                                            └──────────────────────────────┘
 ```
 
 ## 📁 Structure du projet
@@ -85,19 +114,30 @@ docker-compose up --build predict
 ├── extraction_creation_sql.py   # Création table + extraction depuis MinIO
 ├── train_model.py               # Entraînement du modèle ResNet18 (20 epochs)
 ├── predict.py                   # Prédiction sur images de test
-└── FishImgDataset/              # Dataset local (backup)
-    ├── train/                   # 1045 images d'entraînement
-    │   ├── Catfish/
-    │   ├── Gold Fish/
-    │   ├── Mudfish/
-    │   ├── Mullet/
-    │   └── Snakehead/
-    └── test/                    # 261 images de test
-        ├── Catfish/
-        ├── Gold Fish/
-        ├── Mudfish/
-        ├── Mullet/
-        └── Snakehead/
+├── app/
+│   └── main.py                  # API FastAPI avec endpoint /predict
+├── frontend/                    # Application React + Vite
+│   ├── src/
+│   │   ├── App.jsx              # Composant principal avec upload
+│   │   ├── components/          # Composants UI (Bubbles, SwimmingFish, etc.)
+│   │   └── assets/
+│   │       └── fish-images/     # Images PNG pour le frontend
+│   ├── package.json             # Dépendances npm
+│   └── vite.config.js           # Configuration Vite avec proxy
+├── FishImgDataset/              # Dataset local (backup)
+│   ├── train/                   # 1045 images d'entraînement
+│   │   ├── Catfish/
+│   │   ├── Gold Fish/
+│   │   ├── Mudfish/
+│   │   ├── Mullet/
+│   │   └── Snakehead/
+│   └── test/                    # 261 images de test
+│       ├── Catfish/
+│       ├── Gold Fish/
+│       ├── Mudfish/
+│       ├── Mullet/
+│       └── Snakehead/
+└── model_v1_1761836094.pt       # Modèle entraîné (versionné avec Git LFS)
 ```
 
 ## 🔄 Fonctionnement du pipeline
@@ -125,6 +165,21 @@ docker-compose up --build predict
 - Récupère 10 images aléatoires `WHERE split = 'test'` depuis MySQL
 - Fait des prédictions et affiche les résultats avec confiance
 - **Pas de data leakage** : teste uniquement sur le test set
+
+### 4. Service `fish_api` (FastAPI)
+- API REST pour prédictions en temps réel
+- Endpoint `POST /predict` : accepte une image (multipart/form-data)
+- Télécharge le modèle depuis MinIO au démarrage
+- Retourne la prédiction et le score de confiance en JSON
+- CORS activé pour le frontend (port 3000)
+
+### 5. Frontend React + Vite
+- Interface web interactive avec thème aquatique
+- Upload d'images par glisser-déposer ou sélection
+- Animations de bulles et poissons
+- Affichage des résultats avec images et confiance
+- Easter egg Kraken (20 clics sur le titre)
+- Proxy Vite vers l'API (port 8000)
 
 ## 🔒 Anti-cheating measures
 
@@ -237,11 +292,33 @@ docker system prune -a
 - **Model Versioning :** Timestamp automatique dans le nom du modèle
 - **Checkpoint :** Sauvegarde du meilleur modèle basé sur validation accuracy
 
-## 🎯 Prochaines améliorations
+## 🎯 Fonctionnalités
 
+- [x] Pipeline MLOps complet (extraction, training, predict)
+- [x] Versioning du modèle avec Git LFS
+- [x] API REST FastAPI pour prédictions en temps réel
+- [x] Frontend React avec interface interactive
+- [x] Animations et thème aquatique
+- [x] CORS et proxy configurés
 - [ ] Intégration MLflow pour tracking des expériences
-- [ ] API REST pour prédictions en temps réel
 - [ ] Data augmentation plus avancée
-- [ ] Test sur l'ensemble complet du test set (pas seulement 10 images)
+- [ ] Test sur l'ensemble complet du test set
 - [ ] Matrice de confusion et métriques détaillées
 - [ ] CI/CD avec GitHub Actions
+
+## 🛠️ Technologies utilisées
+
+**Backend & MLOps:**
+- Python 3.10
+- PyTorch 2.9.0 (ResNet18)
+- FastAPI (API REST)
+- MinIO (stockage S3-compatible)
+- MySQL 8.0 (métadonnées)
+- Docker & Docker Compose
+- Git LFS (versioning modèle)
+
+**Frontend:**
+- React 18.2.0
+- Vite 5.0.8
+- Axios (HTTP client)
+- Tailwind CSS (styling)

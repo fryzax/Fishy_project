@@ -35,14 +35,14 @@ const fishFacts = {
   ]
 };
 
-// Images pour chaque espèce (vous pouvez mapper selon vos besoins)
+// Images pour chaque espèce
 const fishImages = {
   'Catfish': poissonMocheImg,
   'Gold Fish': clownImg,
+  'Goldfish': clownImg,
   'Mudfish': barImg,
   'Mullet': espadonImg,
   'Snakehead': requinImg,
-  // Fallback
   'default': leviatorImg
 };
 
