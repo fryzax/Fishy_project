@@ -1,0 +1,78 @@
+# Fish API ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fish-api-config
+data:
+  MINIO_HOST: "minio"
+  MINIO_PORT: "9000"
+  MINIO_ACCESS_KEY: "admin-user"
+  MODEL_BUCKET: "models"
+---
+# Fish API Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fish-api-secrets
+type: Opaque
+stringData:
+  MINIO_SECRET_KEY: "admin-password"
+---
+# Fish API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fish-api
+spec:
+  selector:
+    matchLabels:
+      app: fish-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: fish-api
+    spec:
+      containers:
+      - name: fish-api
+        image: fishy_project-fish_api:latest
+        imagePullPolicy: Never  # Pour une image construite localement
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: fish-api-config
+        - secretRef:
+            name: fish-api-secrets
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Fish API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fish-api
+spec:
+  type: LoadBalancer  # Pour accès externe
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: fish-api
