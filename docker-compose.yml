@@ -122,6 +122,8 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
+      mlflow:
+        condition: service_started
       extraction:
         condition: service_completed_successfully
     networks:
