@@ -27,6 +27,20 @@ import mlflow.pytorch  # si tu veux log ton modèle torch
 # 1️⃣ Configuration
 # ============================================================
 
+# Détection de l'environnement (local ou Docker)
+# Si on tourne en local, on utilise localhost, sinon les noms de services Docker
+import socket
+
+def is_running_in_docker():
+    """Détecte si le script tourne dans un conteneur Docker"""
+    try:
+        with open('/proc/1/cgroup', 'r') as f:
+            return 'docker' in f.read()
+    except:
+        return False
+
+IN_DOCKER = is_running_in_docker()
+
 # MinIO configuration
 MINIO_ENDPOINT = "minio:9000"
 MINIO_ACCESS_KEY = "admin-user"
@@ -35,7 +49,7 @@ BUCKET_NAME = "dataset-fish"
 MODEL_BUCKET = "models"
 
 # MySQL configuration
-MYSQL_HOST = "mysql"
+MYSQL_HOST = "mysql" if IN_DOCKER else "localhost"
 MYSQL_USER = "root"
 MYSQL_PASSWORD = "root"
 MYSQL_DB = "mlops"
@@ -50,8 +64,10 @@ BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 IMG_SIZE = 224
 
+print(f"🖥️  Environnement détecté: {'Docker' if IN_DOCKER else 'Local'}")
+
 # ============================================================
-# 2️⃣ Connexion MySQL et MinIO
+# 2️⃣ Connexion MySQL, MinIO et MLflow
 # ============================================================
 print("🔌 Connexion à MySQL...")
 conn = pymysql.connect(
@@ -77,7 +93,28 @@ if not minio_client.bucket_exists(BUCKET_NAME):
 if not minio_client.bucket_exists(MODEL_BUCKET):
     minio_client.make_bucket(MODEL_BUCKET)
     print(f"✅ Bucket '{MODEL_BUCKET}' créé pour stocker les modèles.")
+
+# Créer le bucket mlflow pour les artifacts MLflow
+MLFLOW_BUCKET = "mlflow"
+if not minio_client.bucket_exists(MLFLOW_BUCKET):
+    minio_client.make_bucket(MLFLOW_BUCKET)
+    print(f"✅ Bucket '{MLFLOW_BUCKET}' créé pour les artifacts MLflow.")
+
 print("✅ Connecté à MinIO")
+
+# ============================================================
+# Configuration des credentials S3/MinIO pour MLflow
+# ============================================================
+print("🔌 Configuration des credentials MLflow pour MinIO...")
+os.environ["AWS_ACCESS_KEY_ID"] = MINIO_ACCESS_KEY
+os.environ["AWS_SECRET_ACCESS_KEY"] = MINIO_SECRET_KEY
+os.environ["MLFLOW_S3_ENDPOINT_URL"] = f"http://minio:9000" if IN_DOCKER else "http://localhost:9000"
+print("✅ Credentials configurés pour MLflow")
+
+print("🔌 Configuration de MLflow...")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+print(f"✅ MLflow configuré : {MLFLOW_TRACKING_URI}")
 
 # ============================================================
 # 3️⃣ Lecture des images depuis la table SQL
