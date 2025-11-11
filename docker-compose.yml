@@ -170,6 +170,69 @@ services:
     environment:
       - VITE_API_URL=http://fish_api:8000
 
+  # ====================================
+  #  Prometheus (metrics collection)
+  # ====================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - mlops-net
+    depends_on:
+      - fish_api
+
+  # ====================================
+  #  Grafana (metrics visualization)
+  # ====================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - mlops-net
+    depends_on:
+      - prometheus
+
+  # ====================================
+  #  cAdvisor (container metrics)
+  # ====================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: always
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    networks:
+      - mlops-net
+
 
 # ====================================
 #  Volumes et réseau
@@ -178,6 +241,8 @@ volumes:
   mysql_data:
   minio_data:
   uv_cache:
+  prometheus_data:
+  grafana_data:
 
 networks:
   mlops-net:
