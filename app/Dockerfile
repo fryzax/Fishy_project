@@ -3,9 +3,11 @@ FROM python:3.10-slim
 RUN pip install --no-cache-dir uv
 
 WORKDIR /app
-COPY . .
 
+COPY requirements.txt .
 RUN uv pip install -r requirements.txt --system
+
+COPY . .
 
 EXPOSE 8000
 
