@@ -73,9 +73,12 @@ docker-compose up --build predict
 |---------|-----|--------------|
 | **Frontend React** | http://localhost:3000 | - |
 | **API FastAPI** | http://localhost:8000 | - |
+| **Prometheus** | http://localhost:9090 | - |
+| **Grafana** | http://localhost:3002 | `admin` / `admin` |
 | MinIO Console | http://localhost:9001 | `admin-user` / `admin-password` |
 | phpMyAdmin | http://localhost:8080 | `root` / `root` |
 | MLflow | http://localhost:5001 | - |
+| cAdvisor | http://localhost:8081 | - |
 
 ## 🏗️ Architecture
 
@@ -183,6 +186,17 @@ docker-compose up --build predict
 - Affichage des résultats avec images et confiance
 - Easter egg Kraken (20 clics sur le titre)
 - Proxy Vite vers l'API (port 8000)
+
+### 6. Monitoring Stack (Prometheus + Grafana + cAdvisor)
+- **Prometheus** : collecte des métriques de l'API toutes les 15 secondes
+  - Métriques custom : nombre de prédictions, durée des prédictions, confiance, erreurs
+  - Scrape endpoint : `http://fish_api:8000/metrics`
+- **Grafana** : visualisation des métriques avec dashboard pré-configuré
+  - Dashboard "Fish Classifier API Metrics" avec 6 panneaux
+  - Graphiques : taux de prédictions, durée (percentiles), confiance par classe
+  - Datasource Prometheus configurée automatiquement
+- **cAdvisor** : métriques des conteneurs Docker (CPU, RAM, réseau)
+  - Monitoring de tous les conteneurs en temps réel
 
 ## 🔒 Anti-cheating measures
 
@@ -303,11 +317,11 @@ docker system prune -a
 - [x] Frontend React avec interface interactive
 - [x] Animations et thème aquatique
 - [x] CORS et proxy configurés
-- [ ] Intégration MLflow pour tracking des expériences
-- [ ] Data augmentation plus avancée
-- [ ] Test sur l'ensemble complet du test set
-- [ ] Matrice de confusion et métriques détaillées
-- [ ] CI/CD avec GitHub Actions
+- [x] Intégration MLflow pour tracking des expériences
+- [x] Monitoring avec Prometheus + Grafana + cAdvisor
+- [x] Métriques custom de l'API (prédictions, durée, confiance)
+- [x] Dashboard Grafana pré-configuré
+- [x] Easter egg Kraken interactif
 
 ## 🛠️ Technologies utilisées
 
@@ -317,8 +331,15 @@ docker system prune -a
 - FastAPI (API REST)
 - MinIO (stockage S3-compatible)
 - MySQL 8.0 (métadonnées)
+- MLflow (experiment tracking)
 - Docker & Docker Compose
 - Git LFS (versioning modèle)
+
+**Monitoring:**
+- Prometheus (collecte de métriques)
+- Grafana (visualisation)
+- cAdvisor (métriques conteneurs)
+- prometheus-client (Python SDK)
 
 **Frontend:**
 - React 18.2.0
