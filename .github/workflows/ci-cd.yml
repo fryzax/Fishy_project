@@ -72,7 +72,7 @@ jobs:
     - name: Build and push API Docker image
       working-directory: ./app
       run: |
-        docker build -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.API_IMAGE_NAME }}:latest .
+        docker build -t ghcr.io/${{ github.repository }}/fishy-api:latest .
         docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.API_IMAGE_NAME }}:latest
 
     - name: Build and push Frontend Docker image
