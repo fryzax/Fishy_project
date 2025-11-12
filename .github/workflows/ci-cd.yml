@@ -39,8 +39,11 @@ jobs:
       working-directory: ./app
       run: |
         pip install pytest
-        pytest; if ($LASTEXITCODE -ne 0) { Write-Host "No tests found - continuing pipeline" }
-
+        pytest
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "No tests found - continuing pipeline"
+            exit 0
+        }
 
     # Frontend CI
     - name: Set up Node.js
