@@ -82,12 +82,12 @@ jobs:
         docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
 
     # Update Kubernetes manifests
-    - name: Update image tags in Kustomization
-      run: |
-        cd k8s
-        kustomize edit set image fishy-api=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.API_IMAGE_NAME }}:latest
+    # - name: Update image tags in Kustomization
+    #  run: |
+    #    cd k8s
+    #    kustomize edit set image fishy-api=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.API_IMAGE_NAME }}:latest
 
     # Deploy to Kubernetes
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -k k8s/
+    #- name: Deploy to Kubernetes
+    #  run: |
+    #    kubectl apply -k k8s/
